@@ -2,6 +2,7 @@
 #define ENGINE_H
 
 #include "../jTypes/jTypes.h"
+#include "../inputProcessor/inputProcessor.h"
 
 typedef struct engine 
 {

@@ -93,6 +93,8 @@ engine *createEngine(
 
     eng->numTextures = 0;
 
+    inputProcessorInit();
+
     return &eng->engineExternal;
 }
 
@@ -126,6 +128,13 @@ bool shouldContinueLogicLoops(engineInternal * e)
 void loopHandler(engineInternal *e)
 {
     SDL_RenderClear(e->renderer);
+
+    processInput();
+    if (isStateActive(GS_QUIT))
+    {
+        e->shouldContinue = false;
+        return;
+    }
 
     actorList * al;
     for (al = e->renderList; al != NULL; al = al->next)

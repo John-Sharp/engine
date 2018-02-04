@@ -8,6 +8,9 @@
 #include "listHeaders/actorList.h"
 #include "listCode/actorList.inc"
 
+#include "listHeaders/preLogicCallBackList.h"
+#include "listCode/preLogicCallBackList.inc"
+
 enum 
 {
     MAX_TEXTURES = 50,
@@ -23,6 +26,8 @@ typedef struct engineInternal
 
     SDL_Window *window;
     SDL_Renderer *renderer;
+
+    preLogicCallBackList * preLogicCallBackList;
 
     actorList * renderList;
     actorList * logicList;
@@ -55,7 +60,8 @@ actor *engineActorReg(engine * e, actor *a)
 
 engine *createEngine(
         unsigned int w,
-        unsigned int h)
+        unsigned int h,
+        void * owner)
 {
     engineInternal * eng = malloc(sizeof(*eng));
 
@@ -67,6 +73,7 @@ engine *createEngine(
 
     eng->engineExternal.fps = 80;
     eng->engineExternal.currentFrame = 0;
+    eng->engineExternal.owner = owner;
 
     eng->startTime = 0;
     eng->shouldStartLogicLoop = true;
@@ -88,6 +95,7 @@ engine *createEngine(
 
     SDL_StartTextInput();
 
+    eng->preLogicCallBackList = NULL;
     eng->renderList = NULL;
     eng->logicList = NULL;
 
@@ -125,6 +133,15 @@ bool shouldContinueLogicLoops(engineInternal * e)
     return true;
 }
 
+void processPreLogicCallBacks(engineInternal *e)
+{
+    preLogicCallBackList * pl;
+    for (pl = e->preLogicCallBackList; pl != NULL; pl = pl->next)
+    {
+        (*pl->val)(&e->engineExternal);
+    }
+}
+
 void loopHandler(engineInternal *e)
 {
     SDL_RenderClear(e->renderer);
@@ -135,6 +152,8 @@ void loopHandler(engineInternal *e)
         e->shouldContinue = false;
         return;
     }
+
+    processPreLogicCallBacks(e);
 
     actorList * al;
     for (al = e->renderList; al != NULL; al = al->next)
@@ -224,7 +243,7 @@ void engineSpriteRender(engine * e, sprite *sp)
     SDL_Rect dest;
     engineInternal * eng = (engineInternal *)e;
 
-    dest.x = 0;
+    dest.x = sp->rect.bl[0];
     dest.y = e->h - sp->rect.tr[1];
     dest.w = sp->rect.tr[0] - sp->rect.bl[0];
     dest.h = sp->rect.tr[1] - sp->rect.bl[1];
@@ -240,4 +259,10 @@ void engineSpriteRender(engine * e, sprite *sp)
 
     SDL_RenderCopy (eng->renderer, eng->textures[sp->d->textureId],
             &src, &dest);
+}
+
+void enginePreLogicCallBackReg(engine * e, preLogicCallBack cb)
+{
+    engineInternal * eng = (engineInternal *)e;
+    eng->preLogicCallBackList = preLogicCallBackListAdd(eng->preLogicCallBackList, &cb);
 }

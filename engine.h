@@ -11,14 +11,12 @@ typedef struct engine
     unsigned int w;
     unsigned int h;
 
+    void * owner;
 } engine;
 
 typedef struct actor actor;
 typedef void (*actorRenderHandler)(actor *a);
 typedef void (*actorLogicHandler)(actor *a);
-
-actor *actorInit(actor *a, void * owner, actorRenderHandler renderHandler, 
-        actorLogicHandler logicHandler);
 
 struct actor
 {
@@ -48,7 +46,8 @@ decal * decalInit(decal * d, engine * e, juint textureId, jintRect rect);
 
 engine * createEngine(
         unsigned int w,
-        unsigned int h);
+        unsigned int h,
+        void * owner);
 
 void engineDestroy(engine * e);
 
@@ -60,5 +59,8 @@ juint engineLoadTexture(engine *e, const char * fileName);
 jintRect engineGetTextureRect(engine * e, juint textureId);
 
 actor *engineActorReg(engine * e, actor *a);
+
+typedef void (*preLogicCallBack)(engine *e);
+void enginePreLogicCallBackReg(engine * e, preLogicCallBack cb);
 
 #endif

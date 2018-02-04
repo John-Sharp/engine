@@ -93,6 +93,8 @@ engine *createEngine(
         return NULL;
     }
 
+    SDL_SetRenderDrawColor(eng->renderer, 255, 255, 255, 255);
+
     SDL_StartTextInput();
 
     eng->preLogicCallBackList = NULL;

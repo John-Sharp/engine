@@ -155,8 +155,6 @@ void loopHandler(engineInternal *e)
         return;
     }
 
-    processPreLogicCallBacks(e);
-
     actorList * al;
     for (al = e->renderList; al != NULL; al = al->next)
     {
@@ -165,6 +163,8 @@ void loopHandler(engineInternal *e)
 
     while (shouldContinueLogicLoops(e))
     {
+        processPreLogicCallBacks(e);
+
         for (al = e->logicList; al != NULL; al = al->next)
         {
             al->val->logicHandler(al->val);

@@ -140,7 +140,7 @@ void processPreLogicCallBacks(engineInternal *e)
     preLogicCallBackList * pl;
     for (pl = e->preLogicCallBackList; pl != NULL; pl = pl->next)
     {
-        (*pl->val)(&e->engineExternal);
+        ((preLogicCallBack)pl->val)(&e->engineExternal);
     }
 }
 
@@ -266,5 +266,5 @@ void engineSpriteRender(engine * e, sprite *sp)
 void enginePreLogicCallBackReg(engine * e, preLogicCallBack cb)
 {
     engineInternal * eng = (engineInternal *)e;
-    eng->preLogicCallBackList = preLogicCallBackListAdd(eng->preLogicCallBackList, &cb);
+    eng->preLogicCallBackList = preLogicCallBackListAdd(eng->preLogicCallBackList, (void *)cb);
 }

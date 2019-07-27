@@ -1,0 +1,3 @@
+[submodule "inputProcessor"]
+	path = inputProcessor
+	url = git@github.com:John-Sharp/inputProcessor.git

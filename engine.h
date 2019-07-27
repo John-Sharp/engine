@@ -1,8 +1,8 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include "../jTypes/jTypes.h"
-#include "../inputProcessor/inputProcessor.h"
+// #include "../jTypes/jTypes.h"
+#include "inputProcessor/inputProcessor.h"
 
 typedef struct engine 
 {

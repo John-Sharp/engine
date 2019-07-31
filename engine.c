@@ -205,6 +205,8 @@ juint engineLoadTexture(engine *e, const char * fileName)
     eng->textures[eng->numTextures++] = \
         SDL_CreateTextureFromSurface(eng->renderer, img);
 
+    SDL_FreeSurface(img);
+
     return eng->numTextures-1;
 }
 

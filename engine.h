@@ -56,6 +56,9 @@ void engineStart(engine * e);
 void engineReset(engine * e);
 
 juint engineLoadTexture(engine *e, const char * fileName);
+juint engineCreateTexture(engine *e, Uint32 format, int access, int w, int h);
+typedef void (*pixelUpdater)(void * pixels, int pitch);
+void engineUpdateTexturesPixels(engine * e, juint texture, pixelUpdater pu);
 jintRect engineGetTextureRect(engine * e, juint textureId);
 
 actor *engineActorReg(engine * e, actor *a);

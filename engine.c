@@ -93,7 +93,7 @@ engine *createEngine(
         return NULL;
     }
 
-    SDL_SetRenderDrawColor(eng->renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(eng->renderer, 0, 0, 255, 255);
 
     SDL_StartTextInput();
 
@@ -208,6 +208,44 @@ juint engineLoadTexture(engine *e, const char * fileName)
     SDL_FreeSurface(img);
 
     return eng->numTextures-1;
+}
+
+juint engineCreateTexture(engine *e, Uint32 format, int access, int w, int h)
+{
+    engineInternal * eng = (engineInternal *)e;
+
+    eng->textures[eng->numTextures++] = \
+        SDL_CreateTexture(
+                eng->renderer, format, access, w, h);
+
+    // SDL_SetTextureBlendMode(eng->textures[eng->numTextures-1], SDL_BLENDMODE_BLEND); 
+    // Cairo pre-blends alpha, so the blend mode must be set to account for this
+    SDL_BlendMode blend_mode = SDL_ComposeCustomBlendMode(
+            SDL_BLENDFACTOR_ONE, // source colour factor
+            SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, // dest colour factor
+            SDL_BLENDOPERATION_ADD,
+            SDL_BLENDFACTOR_ONE,// source alpha factor
+            SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,// dest alpha factor
+            SDL_BLENDOPERATION_ADD
+            ); 
+
+
+    SDL_SetTextureBlendMode(eng->textures[eng->numTextures-1], blend_mode); 
+
+    return eng->numTextures-1;
+}
+
+void engineUpdateTexturesPixels(engine * e, juint texture, pixelUpdater pu)
+{
+    engineInternal * eng = (engineInternal *)e;
+
+    SDL_Texture * t = eng->textures[texture];
+    void * p;
+    int pitch;
+
+    SDL_LockTexture(t, NULL, &p, &pitch);
+    pu(p, pitch);
+    SDL_UnlockTexture(t);
 }
 
 decal * decalInit(decal * d, engine * e, juint textureId, jintRect rect)

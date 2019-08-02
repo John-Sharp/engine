@@ -93,7 +93,7 @@ engine *createEngine(
         return NULL;
     }
 
-    SDL_SetRenderDrawColor(eng->renderer, 0, 0, 255, 255);
+    SDL_SetRenderDrawColor(eng->renderer, 255, 255, 255, 255);
 
     SDL_StartTextInput();
 

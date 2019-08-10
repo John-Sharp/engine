@@ -7,6 +7,7 @@
 typedef struct engine 
 {
     unsigned int fps;
+
     unsigned int currentFrame;
     unsigned int w;
     unsigned int h;
@@ -57,13 +58,15 @@ void engineReset(engine * e);
 
 juint engineLoadTexture(engine *e, const char * fileName);
 juint engineCreateTexture(engine *e, Uint32 format, int access, int w, int h);
-typedef void (*pixelUpdater)(void * pixels, int pitch);
-void engineUpdateTexturesPixels(engine * e, juint texture, pixelUpdater pu);
+typedef void (*pixelUpdater)(void * pixels, int pitch, void * ctx);
+void engineUpdateTexturesPixels(engine * e, juint texture, pixelUpdater pu, void * ctx);
 jintRect engineGetTextureRect(engine * e, juint textureId);
 
 actor *engineActorReg(engine * e, actor *a);
 
 typedef void (*preLogicCallBack)(engine *e);
 void enginePreLogicCallBackReg(engine * e, preLogicCallBack cb);
+
+void engineGetFrameRate(engine * e, uint32_t * logicFrameRate, uint32_t * renderFrameRate);
 
 #endif

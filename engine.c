@@ -11,6 +11,8 @@
 #include "listHeaders/preLogicCallBackList.h"
 #include "listCode/preLogicCallBackList.inc"
 
+#include "frameRateTracker/frameRateTracker.h"
+
 enum 
 {
     MAX_TEXTURES = 50,
@@ -36,6 +38,9 @@ typedef struct engineInternal
 
     juint numTextures;
     SDL_Texture * textures[MAX_TEXTURES];
+
+    frameRateTracker * logicFrameRateTracker;
+    frameRateTracker * renderFrameRateTracker;
 
 } engineInternal;
 
@@ -103,6 +108,11 @@ engine *createEngine(
 
     eng->numTextures = 0;
 
+    eng->logicFrameRateTracker = createFrameRateTracker(
+            1000, 100);
+    eng->renderFrameRateTracker = createFrameRateTracker(
+            1000, 100);
+
     inputProcessorInit();
 
     return &eng->engineExternal;
@@ -161,17 +171,27 @@ void loopHandler(engineInternal *e)
         al->val->renderHandler(al->val);
     }
 
+    frameRateTrackerRecordFrame(e->renderFrameRateTracker, SDL_GetTicks());
+
     while (shouldContinueLogicLoops(e))
     {
+        frameRateTrackerRecordFrame(e->logicFrameRateTracker, SDL_GetTicks());
         processPreLogicCallBacks(e);
 
         for (al = e->logicList; al != NULL; al = al->next)
         {
             al->val->logicHandler(al->val);
         }
+        printf("doing logic frame\n");
     }
 
+    printf("logic frame rate is %u, render frame rate is %u\n", frameRateTrackerGetFrameRate(e->logicFrameRateTracker, SDL_GetTicks()),
+            frameRateTrackerGetFrameRate(e->renderFrameRateTracker, SDL_GetTicks()));
+
     SDL_RenderPresent(e->renderer);
+
+    printf("AFTER RENDER logic frame rate is %u, render frame rate is %u\n", frameRateTrackerGetFrameRate(e->logicFrameRateTracker, SDL_GetTicks()),
+            frameRateTrackerGetFrameRate(e->renderFrameRateTracker, SDL_GetTicks()));
 }
 
 void engineStart(engine * e)
@@ -235,7 +255,7 @@ juint engineCreateTexture(engine *e, Uint32 format, int access, int w, int h)
     return eng->numTextures-1;
 }
 
-void engineUpdateTexturesPixels(engine * e, juint texture, pixelUpdater pu)
+void engineUpdateTexturesPixels(engine * e, juint texture, pixelUpdater pu, void * ctx)
 {
     engineInternal * eng = (engineInternal *)e;
 
@@ -244,7 +264,7 @@ void engineUpdateTexturesPixels(engine * e, juint texture, pixelUpdater pu)
     int pitch;
 
     SDL_LockTexture(t, NULL, &p, &pitch);
-    pu(p, pitch);
+    pu(p, pitch, ctx);
     SDL_UnlockTexture(t);
 }
 
@@ -307,4 +327,17 @@ void enginePreLogicCallBackReg(engine * e, preLogicCallBack cb)
 {
     engineInternal * eng = (engineInternal *)e;
     eng->preLogicCallBackList = preLogicCallBackListAdd(eng->preLogicCallBackList, (void *)cb);
+}
+
+void engineGetFrameRate(engine * e, uint32_t * logicFrameRate, uint32_t * renderFrameRate)
+{
+    engineInternal * eng = (engineInternal *)e;
+
+    if (logicFrameRate) {
+        *logicFrameRate = frameRateTrackerGetFrameRate(eng->logicFrameRateTracker, SDL_GetTicks());
+    }
+
+    if (renderFrameRate) {
+        *renderFrameRate = frameRateTrackerGetFrameRate(eng->renderFrameRateTracker, SDL_GetTicks());
+    }
 }

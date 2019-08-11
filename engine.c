@@ -182,16 +182,9 @@ void loopHandler(engineInternal *e)
         {
             al->val->logicHandler(al->val);
         }
-        printf("doing logic frame\n");
     }
 
-    printf("logic frame rate is %u, render frame rate is %u\n", frameRateTrackerGetFrameRate(e->logicFrameRateTracker, SDL_GetTicks()),
-            frameRateTrackerGetFrameRate(e->renderFrameRateTracker, SDL_GetTicks()));
-
     SDL_RenderPresent(e->renderer);
-
-    printf("AFTER RENDER logic frame rate is %u, render frame rate is %u\n", frameRateTrackerGetFrameRate(e->logicFrameRateTracker, SDL_GetTicks()),
-            frameRateTrackerGetFrameRate(e->renderFrameRateTracker, SDL_GetTicks()));
 }
 
 void engineStart(engine * e)

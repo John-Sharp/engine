@@ -11,6 +11,9 @@
 #include "listHeaders/preLogicCallBackList.h"
 #include "listCode/preLogicCallBackList.inc"
 
+#include "listHeaders/preRenderCallBackList.h"
+#include "listCode/preRenderCallBackList.inc"
+
 #include "frameRateTracker/frameRateTracker.h"
 
 enum 
@@ -30,11 +33,14 @@ typedef struct engineInternal
     SDL_Renderer *renderer;
 
     preLogicCallBackList * preLogicCallBackList;
+    preRenderCallBackList * preRenderCallBackList;
 
     actorList * renderList;
     actorList * logicList;
 
+    unsigned int subTotalFrame;
     bool shouldContinue;
+    bool isPaused;
 
     juint numTextures;
     SDL_Texture * textures[MAX_TEXTURES];
@@ -78,11 +84,13 @@ engine *createEngine(
 
     eng->engineExternal.fps = 80;
     eng->engineExternal.currentFrame = 0;
+    eng->subTotalFrame = 0;
     eng->engineExternal.owner = owner;
 
     eng->startTime = 0;
     eng->shouldStartLogicLoop = true;
     eng->wholeFramesToDo = 0;
+    eng->isPaused = false;
 
     SDL_Init(SDL_INIT_VIDEO);
     // TTF_Init();
@@ -106,6 +114,8 @@ engine *createEngine(
     eng->renderList = NULL;
     eng->logicList = NULL;
 
+    eng->preRenderCallBackList = NULL;
+
     eng->numTextures = 0;
 
     eng->logicFrameRateTracker = createFrameRateTracker(
@@ -126,12 +136,17 @@ void engineDestroy(engine * e)
 
 bool shouldContinueLogicLoops(engineInternal * e)
 {
+    if (e->isPaused)
+    {
+        return false;
+    }
+
     if (e->shouldStartLogicLoop) {
         unsigned int logicLoopStartTime = SDL_GetTicks();
         double elapsedFrames = (double)(logicLoopStartTime \
                 - e->startTime) / 1000.0f * e->engineExternal.fps;
 
-        e->wholeFramesToDo = (unsigned int)elapsedFrames - e->engineExternal.currentFrame;
+        e->wholeFramesToDo = (unsigned int)elapsedFrames - e->subTotalFrame;
     }
 
     if (!e->wholeFramesToDo) {
@@ -141,8 +156,18 @@ bool shouldContinueLogicLoops(engineInternal * e)
 
     e->wholeFramesToDo -= 1;
     e->engineExternal.currentFrame += 1;
+    e->subTotalFrame += 1;
     e->shouldStartLogicLoop = false;
     return true;
+}
+
+void processPreRenderCallBacks(engineInternal *e)
+{
+    preRenderCallBackList * pr;
+    for (pr = e->preRenderCallBackList; pr != NULL; pr = pr->next)
+    {
+        ((preRenderCallBack)pr->val)(&e->engineExternal);
+    }
 }
 
 void processPreLogicCallBacks(engineInternal *e)
@@ -164,6 +189,8 @@ void loopHandler(engineInternal *e)
         e->shouldContinue = false;
         return;
     }
+
+    processPreRenderCallBacks(e);
 
     actorList * al;
     for (al = e->renderList; al != NULL; al = al->next)
@@ -322,6 +349,12 @@ void enginePreLogicCallBackReg(engine * e, preLogicCallBack cb)
     eng->preLogicCallBackList = preLogicCallBackListAdd(eng->preLogicCallBackList, (void *)cb);
 }
 
+void enginePreRenderCallBackReg(engine * e, preRenderCallBack cb)
+{
+    engineInternal * eng = (engineInternal *)e;
+    eng->preRenderCallBackList = preRenderCallBackListAdd(eng->preRenderCallBackList, (void *)cb);
+}
+
 void engineGetFrameRate(engine * e, uint32_t * logicFrameRate, uint32_t * renderFrameRate)
 {
     engineInternal * eng = (engineInternal *)e;
@@ -333,4 +366,32 @@ void engineGetFrameRate(engine * e, uint32_t * logicFrameRate, uint32_t * render
     if (renderFrameRate) {
         *renderFrameRate = frameRateTrackerGetFrameRate(eng->renderFrameRateTracker, SDL_GetTicks());
     }
+}
+
+bool engineIsPaused(engine * e)
+{
+    engineInternal * eng = (engineInternal *)e;
+
+    return eng->isPaused;
+}
+
+void enginePause(engine * e)
+{
+    engineInternal * eng = (engineInternal *)e;
+
+    eng->isPaused = true; 
+}
+
+void engineUnpause(engine * e)
+{
+    engineInternal * eng = (engineInternal *)e;
+
+    if (!eng->isPaused)
+    {
+        return;
+    }
+
+    eng->isPaused = false;
+    eng->startTime = SDL_GetTicks();
+    eng->subTotalFrame = 0;
 }

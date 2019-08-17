@@ -67,6 +67,13 @@ actor *engineActorReg(engine * e, actor *a);
 typedef void (*preLogicCallBack)(engine *e);
 void enginePreLogicCallBackReg(engine * e, preLogicCallBack cb);
 
+typedef void (*preRenderCallBack)(engine *e);
+void enginePreRenderCallBackReg(engine * e, preRenderCallBack cb);
+
+bool engineIsPaused(engine * e);
+void enginePause(engine * e);
+void engineUnpause(engine * e);
+
 void engineGetFrameRate(engine * e, uint32_t * logicFrameRate, uint32_t * renderFrameRate);
 
 #endif

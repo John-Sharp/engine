@@ -27,6 +27,7 @@ typedef struct engineInternal
     Uint32 startTime;
 
     bool shouldStartLogicLoop;
+    bool advanceFramesRequested;
     unsigned int wholeFramesToDo;
 
     SDL_Window *window;
@@ -89,6 +90,7 @@ engine *createEngine(
 
     eng->startTime = 0;
     eng->shouldStartLogicLoop = true;
+    eng->advanceFramesRequested = false;
     eng->wholeFramesToDo = 0;
     eng->isPaused = false;
 
@@ -136,11 +138,10 @@ void engineDestroy(engine * e)
 
 bool shouldContinueLogicLoops(engineInternal * e)
 {
-    if (e->isPaused)
+    if (e->isPaused && !e->advanceFramesRequested)
     {
         return false;
     }
-
     if (e->shouldStartLogicLoop) {
         unsigned int logicLoopStartTime = SDL_GetTicks();
         double elapsedFrames = (double)(logicLoopStartTime \
@@ -150,6 +151,7 @@ bool shouldContinueLogicLoops(engineInternal * e)
     }
 
     if (!e->wholeFramesToDo) {
+        e->advanceFramesRequested = false;
         e->shouldStartLogicLoop = true;
         return false;
     }
@@ -394,4 +396,13 @@ void engineUnpause(engine * e)
     eng->isPaused = false;
     eng->startTime = SDL_GetTicks();
     eng->subTotalFrame = 0;
+}
+
+void engineAdvanceFrames(engine * e, juint frames)
+{
+    engineInternal * eng = (engineInternal *)e;
+
+    eng->shouldStartLogicLoop = false;
+    eng->advanceFramesRequested = true;
+    eng->wholeFramesToDo = frames;
 }

@@ -74,6 +74,8 @@ bool engineIsPaused(engine * e);
 void enginePause(engine * e);
 void engineUnpause(engine * e);
 
+void engineAdvanceFrames(engine * e, juint frames);
+
 void engineGetFrameRate(engine * e, uint32_t * logicFrameRate, uint32_t * renderFrameRate);
 
 #endif

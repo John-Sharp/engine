@@ -1,1 +1,3 @@
 *.o
+listCode/*
+listHeaders/*

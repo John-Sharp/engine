@@ -317,7 +317,7 @@ jintRect engineGetTextureRect(engine *e, juint textureId)
 
     jintRect rect = {bl: {0, 0}};
     SDL_QueryTexture(eng->textures[textureId],
-            NULL, NULL, &rect.tr[0], &rect.tr[1]);
+            NULL, NULL, &rect.tr.x, &rect.tr.y);
 
     return rect;
 }
@@ -327,19 +327,19 @@ void engineSpriteRender(engine * e, sprite *sp)
     SDL_Rect dest;
     engineInternal * eng = (engineInternal *)e;
 
-    dest.x = sp->rect.bl[0];
-    dest.y = e->h - sp->rect.tr[1];
-    dest.w = sp->rect.tr[0] - sp->rect.bl[0];
-    dest.h = sp->rect.tr[1] - sp->rect.bl[1];
+    dest.x = sp->rect.bl.x;
+    dest.y = e->h - sp->rect.tr.y;
+    dest.w = sp->rect.tr.x - sp->rect.bl.x;
+    dest.h = sp->rect.tr.y - sp->rect.bl.y;
 
     SDL_Rect src;
     jint texHeight;
     SDL_QueryTexture(eng->textures[sp->d->textureId],
             NULL, NULL, NULL, &texHeight);
-    src.x = sp->d->rect.bl[0];
-    src.y = texHeight - sp->d->rect.tr[1];
-    src.w = sp->d->rect.tr[0] - sp->d->rect.bl[0];
-    src.h = sp->d->rect.tr[1] - sp->d->rect.bl[1];
+    src.x = sp->d->rect.bl.x;
+    src.y = texHeight - sp->d->rect.tr.y;
+    src.w = sp->d->rect.tr.x - sp->d->rect.bl.x;
+    src.h = sp->d->rect.tr.y - sp->d->rect.bl.y;
 
     SDL_RenderCopy (eng->renderer, eng->textures[sp->d->textureId],
             &src, &dest);

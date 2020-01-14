@@ -5,13 +5,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-#if 0
-void * myMalloc(size_t x);
-#define malloc(x) myMalloc(x)
-void myFree(void * ptr);
-#define free(x) myFree(x)
-#endif
-
 typedef struct frameRateTrackerInternal
 {
     frameRateTracker frameRateTrackerExternal;

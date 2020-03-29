@@ -70,6 +70,24 @@ actor *engineActorReg(engine * e, actor *a)
     return a;
 }
 
+void actorEngineDereg(actor * a)
+{
+    engineInternal *eng = (engineInternal *)a->eng;
+    if (a->renderHandler)
+    {
+        eng->renderList = actorListRm(
+                eng->renderList, a, actorCmp, NULL);
+    }
+
+    if (a->logicHandler)
+    {
+        eng->logicList = actorListRm(
+                eng->logicList, a, actorCmp, NULL);
+    }
+
+    a->eng = NULL;
+}
+
 engine *createEngine(
         unsigned int w,
         unsigned int h,

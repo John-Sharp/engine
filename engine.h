@@ -63,6 +63,7 @@ void engineUpdateTexturesPixels(engine * e, juint texture, pixelUpdater pu, void
 jintRect engineGetTextureRect(engine * e, juint textureId);
 
 actor *engineActorReg(engine * e, actor *a);
+void actorEngineDereg(actor * a);
 
 typedef void (*preLogicCallBack)(engine *e);
 void enginePreLogicCallBackReg(engine * e, preLogicCallBack cb);

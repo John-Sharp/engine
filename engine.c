@@ -416,6 +416,15 @@ void engineUnpause(engine * e)
     eng->subTotalFrame = 0;
 }
 
+jintVec engineGetMouseLocation(engine * e)
+{
+    jintVec ret;
+    SDL_GetMouseState(&ret.v[0], &ret.v[1]);
+    ret.v[1] = e->h - ret.v[1];
+    
+    return ret;
+}
+
 void engineAdvanceFrames(engine * e, juint frames)
 {
     engineInternal * eng = (engineInternal *)e;
